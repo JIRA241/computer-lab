@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  userType        UserType
+  studentId      String   @unique
+  firstName      String
+  lastName       String
+  profileImage   String?
+  dateOfBirth    DateTime?
+  gender         Gender?
+  passwordHash   String
+  username       String   @unique
+  email          String   @unique
+  courses        Course[] @relation("CourseTeacher")
+  roomBookings   RoomBooking[] @relation("BookingApprover")
+  roomRentals    RoomRental[] @relation("RentalRenter")
+  roomRentalsReturn RoomRental[] @relation("RentalReturner")
+}
+
+model Classroom {
+  id            Int       @id @default(autoincrement())
+  roomNumber    String    @unique
+  floor         Int
+  size          Size
+  roomImage     String?
+  roomType      RoomType
+  courses       Course[]
+  roomBookings  RoomBooking[]
+  roomRentals   RoomRental[]
+}
+
+model Course {
+  id          Int       @id @default(autoincrement())
+  courseCode  String    @unique
+  courseName  String
+  teacher     User      @relation("CourseTeacher", fields: [teacherId], references: [id])
+  teacherId   Int
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  classroomId Int
+  classDay    ClassDay
+}
+
+model RoomBooking {
+  id           Int       @id @default(autoincrement())
+  classroom    Classroom @relation(fields: [classroomId], references: [id])
+  classroomId  Int
+  bookingDate  DateTime
+  startTime    DateTime
+  endTime      DateTime
+  approver     User      @relation("BookingApprover", fields: [approverId], references: [id])
+  approverId   Int
+}
+
+model RoomRental {
+  id             Int       @id @default(autoincrement())
+  classroom      Classroom @relation(fields: [classroomId], references: [id])
+  classroomId    Int
+  rentalDate     DateTime
+  rentalStartTime DateTime
+  renter          User     @relation("RentalRenter", fields: [renterId], references: [id])
+  renterId       Int
+  rentalDetails  String?
+  returnDate     DateTime
+  returnTime     DateTime
+  returner       User     @relation("RentalReturner", fields: [returnerId], references: [id])
+  returnerId     Int
+}
+
+enum UserType {
+  student
+  teacher
+  admin
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum Size {
+  small
+  medium
+  large
+}
+
+enum RoomType {
+  lecture
+  lab
+  seminar
+}
+
+enum ClassDay {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
