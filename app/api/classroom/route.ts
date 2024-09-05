@@ -1,26 +1,10 @@
-//test API
-
-// export function GET(){
-//     return Response.json({
-//         message: 'Test'
-//     })
-// }
-
-// export async function POST(request:Request){
-//     const { title, content } = await request.json()
-//     return Response.json({
-//         data: {
-//             title,
-//             content
-//         }
-//     })
-// }
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export function GET() {
-    // Implement GET method here
+export async function GET() {
+    const room = await prisma.classroom.findMany()
+    return Response.json(room)
 }
 
 export async function POST(request: Request) {
