@@ -10,5 +10,6 @@
             "name": "jira",
             "password": "12345678"
         }
-    ]
+    ],
+    "WillLuke.nextjs.hasPrompted": true
 }
