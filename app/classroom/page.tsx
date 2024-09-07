@@ -1,7 +1,16 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { Card, TextField, MenuItem, Select, InputLabel, FormControl, Grid } from '@mui/material';
+import CardContent from '@mui/material/CardContent';
 
-// Define the type for classroom data
+// ประกาศ type 
 interface Classroom {
   id: number;
   roomNumber: string;
@@ -15,6 +24,10 @@ const ClassroomPage: React.FC = () => {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filterType, setFilterType] = useState<string>(''); // ฟิลเตอร์ roomType
+  const [sortField, setSortField] = useState<string>('');   // สนามจัดเรียง
 
   useEffect(() => {
     const fetchClassrooms = async () => {
@@ -35,37 +48,120 @@ const ClassroomPage: React.FC = () => {
     fetchClassrooms();
   }, []);
 
+  // ฟังก์ชันจัดการการค้นหา
+  const handleSearch = () => {
+    return classrooms.filter((classroom) =>
+      classroom.roomNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  // ฟังก์ชันจัดการการกรอง
+  const handleFilter = (filteredClassrooms: Classroom[]) => {
+    if (!filterType) return filteredClassrooms;
+    return filteredClassrooms.filter((classroom) => classroom.roomType === filterType);
+  };
+
+  // ฟังก์ชันจัดการการจัดเรียง
+  const handleSort = (filteredClassrooms: Classroom[]) => {
+    if (!sortField) return filteredClassrooms;
+    return [...filteredClassrooms].sort((a, b) =>
+      a[sortField as keyof Classroom] > b[sortField as keyof Classroom] ? 1 : -1
+    );
+  };
+
+  const processedClassrooms = handleSort(handleFilter(handleSearch()));
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Classrooms</h1>
-      <table className="min-w-full bg-while border border-gray-200">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border">Room Number</th>
-            <th className="py-2 px-4 border">Floor</th>
-            <th className="py-2 px-4 border">Size</th>
-            <th className="py-2 px-4 border">Room Type</th>
-            <th className="py-2 px-4 border">Image</th>
-          </tr>
-        </thead>
-        <tbody>
-          {classrooms.map((room) => (
-            <tr key={room.id}>
-              <td className="py-2 px-4 border">{room.roomNumber}</td>
-              <td className="py-2 px-4 border">{room.floor}</td>
-              <td className="py-2 px-4 border">{room.size}</td>
-              <td className="py-2 px-4 border">{room.roomType}</td>
-              <td className="py-2 px-4 border">
-                <img src={room.roomImage} alt={`Room ${room.roomNumber}`} width="100" />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Card className="container mx-auto p-4">
+      <CardContent>
+        <h1 className="text-2xl text-black mb-4">Classrooms</h1>
+
+        {/* ใช้ Grid เพื่อให้ search, filter, sort อยู่ในแถวเดียวกัน */}
+        <Grid container spacing={2} alignItems="center" marginBottom={3}>
+          {/* Search input */}
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Search by Room Number"
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              fullWidth
+            />
+          </Grid>
+
+          {/* Filter select */}
+          <Grid item xs={12} sm={4}>
+            <FormControl fullWidth>
+              <InputLabel>Filter by Room Type</InputLabel>
+              <Select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="Lecture">Lecture</MenuItem>
+                <MenuItem value="Laboratory">Laboratory</MenuItem>
+                <MenuItem value="Seminar">Seminar</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Sort select */}
+          <Grid item xs={12} sm={4}>
+            <FormControl fullWidth>
+              <InputLabel>Sort by</InputLabel>
+              <Select
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value)}
+              >
+                <MenuItem value="">None</MenuItem>
+                <MenuItem value="roomNumber">Room Number</MenuItem>
+                <MenuItem value="floor">Floor</MenuItem>
+                <MenuItem value="size">Size</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Room Number</TableCell>
+                <TableCell align="right">Floor</TableCell>
+                <TableCell align="right">Size</TableCell>
+                <TableCell align="right">Room Type</TableCell>
+                <TableCell align="right">Image</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {processedClassrooms.map((row) => (
+                <TableRow
+                  key={row.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {row.roomNumber}
+                  </TableCell>
+                  <TableCell align="right">{row.floor}</TableCell>
+                  <TableCell align="right">{row.size}</TableCell>
+                  <TableCell align="right">{row.roomType}</TableCell>
+                  <TableCell align="right">
+                    <img
+                      src={row.roomImage}
+                      alt={`Room ${row.roomNumber}`}
+                      width="100"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </CardContent>
+    </Card>
   );
 };
 
