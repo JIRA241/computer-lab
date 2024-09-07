@@ -101,9 +101,9 @@ const ClassroomPage: React.FC = () => {
                 onChange={(e) => setFilterType(e.target.value)}
               >
                 <MenuItem value="">All</MenuItem>
-                <MenuItem value="Lecture">Lecture</MenuItem>
-                <MenuItem value="Laboratory">Laboratory</MenuItem>
-                <MenuItem value="Seminar">Seminar</MenuItem>
+                <MenuItem value="lecture">lecture</MenuItem>
+                <MenuItem value="lab">Lab</MenuItem>
+                <MenuItem value="seminar">seminar</MenuItem>
               </Select>
             </FormControl>
           </Grid>
